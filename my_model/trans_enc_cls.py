@@ -16,38 +16,38 @@ class PreprocessLayer(nn.Module):
         self.mask_percentage = mask_percentage
 
     def forward(self, data):
-        # 判断每个向量是否为空（所有值都为零）
+        
         is_empty_vector = torch.all(data == 0, dim=-1)
-        # 统计每个 batch 中非空向量的数量
+        
         non_empty_counts = torch.sum(~is_empty_vector, dim=1)
-        # 统计空向量的数量
+        
         empty_counts = data.size(1) - non_empty_counts
 
-        # 计算每个样本中需要 mask 的向量数（非空向量数 * percentage）
+        
         num_vectors_to_mask = (non_empty_counts * self.mask_percentage).long()
-        # 计算每个样本中需要 mask 的空向量数（空向量数 * (percentage /5)）
+       
         num_empty_vectors_to_mask = (empty_counts * 0.10).long()
-        # num_empty_vectors_to_mask = 0
+        
 
-        # 创建 mask
+        
         mask = torch.zeros_like(data)
 
-        # 对每个样本进行处理
-        for i in range(data.size(0)):  # 遍历 batch_size
-            # 找到非零的索引
+        
+        for i in range(data.size(0)):  
+            
             non_empty_indices = torch.nonzero(~is_empty_vector[i, :], as_tuple=False)
 
-            # 随机选择需要 mask 的非空向量索引
+            
             indices_to_mask = non_empty_indices[torch.randperm(non_empty_indices.size(0))[:num_vectors_to_mask[i]]]
-            # 对 mask 中对应位置赋值为 1
+           
             mask[i, indices_to_mask, :] = 1
 
-            # 随机选择需要 mask 的空向量索引
+            
             empty_indices_to_mask = torch.randperm(data.size(1))[:num_empty_vectors_to_mask[i]]
-            # 对 mask 中对应位置赋值为 1
+            
             mask[i, empty_indices_to_mask, :] = 1
 
-        # 返回遮盖后的数据和遮盖掩码
+        
 
         return (1 - mask) * data, mask
 
@@ -100,19 +100,19 @@ class TransformerEncoder(nn.Module):
         batch_size, seq_len, token_dim = x.size()
 
         x = x.view(batch_size * seq_len, token_dim, 1)
-        # 卷积操作
+        
         conv_embedding = self.conv_layer(x)
-        # 调整形状回 (batch_size, seq_len, token_dim)
+        # (batch_size, seq_len, token_dim)
         conv_embedding = conv_embedding.view(batch_size, seq_len, -1)
         x = x.view(batch_size, seq_len, -1)
         x = torch.cat([x, conv_embedding], dim=-1)   
 
         masked_x, mask = self.preprocess_layer(x)
-        position_embedding = self.position_encoding[:seq_len, :].unsqueeze(0).expand(batch_size, seq_len, self.token_dim).to(device)#[64*258*10]
-        x = torch.cat([x, position_embedding], dim=-1)  # 在 token_dim 维度上拼接绝对位置编码[64*258*35]
-        masked_x = torch.cat([masked_x, position_embedding], dim=-1)  # 在 token_dim 维度上拼接绝对位置编码[64*258*35]
+        position_embedding = self.position_encoding[:seq_len, :].unsqueeze(0).expand(batch_size, seq_len, self.token_dim).to(device)
+        x = torch.cat([x, position_embedding], dim=-1)  # 
+        masked_x = torch.cat([masked_x, position_embedding], dim=-1)  
         mask = torch.cat([mask,torch.zeros_like(position_embedding)], dim=-1)
-        # 对 mask 进行拼接
+        
         mask = torch.where(mask[:, :,:1] == 0, torch.zeros_like(mask), torch.ones_like(mask))
         mask[:,-1,:] = 0
         masked_ori_data = mask * x
@@ -122,11 +122,11 @@ class TransformerEncoder(nn.Module):
         rec_masked_x = self.backembed(rec_masked_x)
         rec_masked_x = self.transformer_decoder(rec_masked_x)
 
-        #只计算mask区域的损失
+        
         masked_fin_data = mask * rec_masked_x
         rec_loss = self.Rec_Loss(masked_ori_data, masked_fin_data)
         
-        #前向输入的是完整的，未被mask的真实数据
+        
         rec_x = self.transformer_encoder(x)
 
         x = self.pooling_layer(rec_x)
