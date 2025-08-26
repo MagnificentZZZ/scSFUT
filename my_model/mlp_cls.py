@@ -22,6 +22,6 @@ class MLP(nn.Module):
         # x = self.relu(x)
         x = self.fc3(x)
 
-        # x = self.softmax(x)  # 应用softmax激活函数
+        # x = self.softmax(x)  
         
         return x
