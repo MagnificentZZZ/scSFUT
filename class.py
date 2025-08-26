@@ -166,9 +166,9 @@ def train():
         # tmp_y = my_dataset[train_indices][1]
 
         # new_train_indices, new_val_indices = next(kf_second.split(tmp_x,tmp_y), tmp_y)
-        train_indices = np.array(train_indices)  # 确保是 NumPy 数组
+        train_indices = np.array(train_indices)  
 
-        # 按照 3:1 的比例随机划分
+        
         train_split_indices, val_split_indices = train_test_split(
             train_indices, 
             test_size=0.25,  # 验证集占 25%（即 1/4）
@@ -176,108 +176,11 @@ def train():
         train_indices = train_indices[train_split_indices]
         val_indices = train_indices[val_split_indices]
 
-        # from sklearn.model_selection import train_test_split
-
-        # # 假设 label 是一个包含所有样本标签的数组
-        # # train_index 是当前保留的训练集索引列表
-        # train_labels = label[train_indices]
-
-        # # 获取新的索引列表，分层抽样，每类保留10%
-        # _, new_index_in_train = train_test_split(
-        #     range(len(train_labels)),  # 按当前训练集的长度生成索引
-        #     test_size=0.3,  # 保留 10% 数据
-        #     stratify=train_labels,  # 根据标签分层
-        #     random_state=42  # 确保随机性可复现
-        # )
-
-        # # 将相对于 train_index 的索引，映射回原始数据的索引
-        # new_index = np.array(train_indices)[new_index_in_train]
-        # train_indices = new_index
-        # print(train_indices.shape)
-        # 打印前五个样本
-        # print("训练样本中的前五个样本:")
-        # for i in range(0, 10):
-        #     print(f"标签 = {my_dataset[train_indices][1][i]}")
-        
-        # new_adata = anndata.read_h5ad("./cls_data/Baron/Baron_fold_1_train.h5ad")   #Load
-        # print(new_adata.obs['cell_type'][:10])
-        
-        # return 
-
-        # # 检查验证集和训练集是否有重叠
-        # val_train_overlap = set(train_indices) & set(val_indices)
-        # print("Validation set and training set overlap:", val_train_overlap)
-        # # 检查测试集和训练集是否有重叠
-        # test_train_overlap = set(train_indices) & set(test_indices)
-        # print("Test set and training set overlap:", test_train_overlap)
-        # # 检查测试集和验证集是否有重叠
-        # test_val_overlap = set(val_indices) & set(test_indices)
-        # print("Test set and validation set overlap:", test_val_overlap)
-
-        # adata_fold_1 = adata[train_indices].copy()  # 选择保存测试数据，也可以选择 train_indices
-        # adata_fold_2 = adata[val_indices].copy()  # 选择保存测试数据，也可以选择 train_indices
-        # adata_fold_3 = adata[test_indices].copy()  # 选择保存测试数据，也可以选择 train_indices
-
-        # fold_path_1 = os.path.join(output_dir, f'Mat_fold_{fold + 1}_train.h5ad')
-        # fold_path_2 = os.path.join(output_dir, f'Mat_fold_{fold + 1}_val.h5ad')
-        # fold_path_3 = os.path.join(output_dir, f'Mat_fold_{fold + 1}_test.h5ad')
-
-        # adata_fold_1.write_h5ad(fold_path_1)
-        # adata_fold_2.write_h5ad(fold_path_2)
-        # adata_fold_3.write_h5ad(fold_path_3)
-
-        # print(f'Fold {fold + 1} saved')
-        # continue
-
+       
         transformer_model = TransformerEncoder(seq_length=token_num, token_dim=TOKEN_DIM, conv_emb_dim=CONV_DIM, num_layers_1=NUM_LAYER1, num_layers_2=NUM_LAYER2, num_heads=NUM_HEAD, mask_percentage=M_PERCENTAGE).double()
         classification_model = MLP(input_dim=token_num, hidden_dim1 = HIDDEN_SIZE_1, hidden_dim2 = HIDDEN_SIZE_2, num_classes=NUM_CLASS, dropout=DROPOUT).double()
         transformer_model.to(device)
         classification_model.to(device)
-
-        # def count_parameters(model):
-        #     total_params = sum(p.numel() for p in model.parameters())
-        #     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        #     return total_params, trainable_params
-
-        # transformer_total, transformer_trainable = count_parameters(transformer_model)
-        # classification_total, classification_trainable = count_parameters(classification_model)
-
-        # print(f"Transformer Model - Total Parameters: {transformer_total}, Trainable Parameters: {transformer_trainable}")
-        # print(f"Classification Model - Total Parameters: {classification_total}, Trainable Parameters: {classification_trainable}")
-        from fvcore.nn import FlopCountAnalysis
-
-        # 假设模型和设备
-        # device = "cuda" if torch.cuda.is_available() else "cpu"
-
-        # # 假设 Transformer 模型和分类模型
-        # transformer_model = transformer_model.to(device)  # 将 Transformer 模型迁移到设备
-        # classification_model = classification_model.to(device)  # 将分类模型迁移到设备
-
-        # # 假设输入维度
-        # seq_len = 202
-        # token_dim = 64
-        # hidden_dim = 202  # Transformer 输出的隐藏维度（根据模型定义）
-
-        # # Transformer 模型 FLOPs 和参数计算
-        # transformer_input = torch.randn(64, seq_len, token_dim).to(device)  # Batch size = 1
-        # flops_transformer = FlopCountAnalysis(transformer_model, transformer_input.double()).total()
-        # params_transformer = sum(p.numel() for p in transformer_model.parameters())
-
-        # # 分类模型 FLOPs 和参数计算
-        # classification_input = torch.randn(64, hidden_dim).to(device)  # Batch size = 1
-        # flops_class = FlopCountAnalysis(classification_model, classification_input.double()).total()
-        # params_class = sum(p.numel() for p in classification_model.parameters())
-
-        # # 汇总结果
-        # total_flops = flops_transformer + flops_class
-        # total_params = params_transformer + params_class
-
-        # # 打印结果
-        # print(f"Transformer Model - FLOPs: {flops_transformer / 1e9:.2f} GFLOPs, Params: {params_transformer / 1e6:.2f} M")
-        # print(f"Classification Model - FLOPs: {flops_class / 1e9:.2f} GFLOPs, Params: {params_class / 1e6:.2f} M")
-        # print(f"Total - FLOPs: {total_flops / 1e9:.2f} GFLOPs, Params: {total_params / 1e6:.2f} M")
-
-
 
         criterion = FocalLoss(gamma = 0)
         optimizer = torch.optim.Adam(list(transformer_model.parameters()) + list(classification_model.parameters()), lr=LR, weight_decay=1e-4)
@@ -381,27 +284,13 @@ def train():
             test_F1.append(test_f1)
             test_PRE.append(test_precision)
 
-            # conf_matrix = confusion_matrix(all_test_labels, test_pred_classes)
-            # print(all_test_labels[:10])
-
-            # 假设类别标签为0到10
-            # classes = [f'Class_{i}' for i in range(11)]
-
-            # 保存预测值到文件
-            # pred_df = pd.DataFrame({'Predictions': test_pred_classes})
-            # pred_df.to_csv(f'pictures_paper/predictions_fold{fold+1}).csv', index=False)
-
-            # 保存混淆矩阵到文件
-            # conf_matrix_df = pd.DataFrame(conf_matrix, index=classes, columns=classes)
-            # conf_matrix_df.to_csv(f'pictures_paper/confusion_matrix_fold{fold+1}.csv')
-
             print(f"Fold {fold + 1}/{FOLD} - Test Accuracy: {test_accuracy:.4f}, Test F1 Score: {test_f1:.4f}, Test Precision Score: {test_precision:.4f}\nTest F1_All: {test_f1_all}\n\n")
 
     acc_mean, acc_std = compute_mean_std(test_ACC)
     f1_mean, f1_std = compute_mean_std(test_F1)
     pre_mean, pre_std = compute_mean_std(test_PRE)
 
-    # 输出结果
+   
     print(f"ACC: {acc_mean}±{acc_std}")
     print(f"F1: {f1_mean}±{f1_std}")
     print(f"Pre: {pre_mean}±{pre_std}")
@@ -420,3 +309,4 @@ train()
 
 
     
+
