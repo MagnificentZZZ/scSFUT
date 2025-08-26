@@ -299,7 +299,7 @@ def train():
     "F1": [test_F1, f1_mean , f1_std],
     "PRE": [test_PRE, pre_mean , pre_std]
 }
-    save_args_and_results(args, results, save_path='./results/few-train.json')
+    save_args_and_results(args, results, save_path='./results/train.json')
 
 setup_seed(RANDOM_SEED)
 data_produce()
@@ -309,4 +309,5 @@ train()
 
 
     
+
 
