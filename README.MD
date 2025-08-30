@@ -10,6 +10,14 @@
 ### Citation Format
 Zhang H, Jiang Z, Zhang S, et al. Scale-free and unbiased transformer with tokenization for cell type annotation from single-cell RNA-seq data[J]. Pattern Recognition, 2025: 111724.
 
+`@article{zhang2025scale,
+  title={Scale-free and unbiased transformer with tokenization for cell type annotation from single-cell RNA-seq data},
+  author={Zhang, Hongwei and Jiang, Ziyang and Zhang, Song and Tu, Liyun and Carlson, David},
+  journal={Pattern Recognition},
+  pages={111724},
+  year={2025},
+  publisher={Elsevier}
+}`  
 
 ## 2. Data Input Format
 The model requires preprocessed scRNA-seq data in **AnnData (.h5ad)** format. Below are the detailed requirements for input data:
@@ -101,5 +109,6 @@ Stored in `./input_data/{DATASET_NAME}/`:
 Stored in `./ckpts/{DATASET_NAME}/`:  
 - Files named `{timestamp}_fold{fold_num}.pt`: Saved weights of the best model (by validation F1 score) for each cross-validation fold.  
 - `timestamp`: Current time (e.g., "08-26_14-30-00") to avoid overwriting.  
+
 
 
